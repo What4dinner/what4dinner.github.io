@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RHCSA EX200 Study Guide</title>
+    <style>
+        :root {
+            --red: #cc0000;
+            --red-dark: #990000;
+            --red-light: #ff3333;
+            --bg: #0f0f0f;
+            --bg-2: #1a1a1a;
+            --bg-3: #242424;
+            --bg-4: #2e2e2e;
+            --border: #333;
+            --text: #e8e8e8;
+            --text-muted: #888;
+            --yellow: #ffc107;
+            --green: #4caf50;
+            --sidebar-w: 300px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--red);
+            padding: 0 20px;
+            height: 56px;
+            flex-shrink: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .topbar-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            line-height: 1;
+        }
+        .topbar-toggle:hover { background: rgba(255,255,255,0.15); }
+        .topbar-logo {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .topbar-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.03em;
+        }
+        .topbar-sub {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.75);
+            letter-spacing: 0.1em;
+            font-weight: 400;
+        }
+        .topbar-search {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .topbar-search input {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            width: 200px;
+            outline: none;
+        }
+        .topbar-search input::placeholder { color: rgba(255,255,255,0.5); }
+        .topbar-search input:focus { border-color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.4); }
+        .topbar-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        .topbar-progress-bar {
+            width: 100px;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .topbar-progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        /* ── LAYOUT ── */
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-2);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: width 0.25s ease, opacity 0.25s ease;
+            overflow: hidden;
+        }
+        .sidebar.collapsed {
+            width: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .sidebar-inner {
+            width: var(--sidebar-w);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+        .sidebar-home {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            color: var(--yellow);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+        .sidebar-home:hover { background: var(--bg-3); }
+        .sidebar-home.active { background: var(--bg-3); color: white; }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .chapter-group { border-bottom: 1px solid var(--border); }
+        .chapter-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: background 0.15s, color 0.15s;
+            user-select: none;
+        }
+        .chapter-header:hover { background: var(--bg-3); color: var(--text); }
+        .chapter-header.has-active { color: var(--red-light); }
+        .chapter-chevron {
+            margin-left: auto;
+            font-size: 0.65rem;
+            transition: transform 0.2s;
+            opacity: 0.6;
+        }
+        .chapter-group.open .chapter-chevron { transform: rotate(90deg); }
+        .chapter-progress-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+        .chapter-header.has-active .chapter-progress-dot { background: var(--red); }
+
+        .topic-list {
+            display: none;
+        }
+        .chapter-group.open .topic-list { display: block; }
+
+        .topic-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 16px 7px 28px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            transition: background 0.15s, color 0.15s;
+            line-height: 1.4;
+        }
+        .topic-item:hover { background: var(--bg-3); color: var(--text); }
+        .topic-item.active {
+            background: var(--bg-4);
+            color: white;
+            border-left: 2px solid var(--red);
+        }
+        .topic-item.hidden { display: none; }
+        .topic-check {
+            width: 14px; height: 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 3px;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px;
+            transition: background 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+        .topic-check.done { background: var(--green); border-color: var(--green); color: white; }
+        .topic-label { flex: 1; }
+
+        /* ── MAIN CONTENT ── */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 48px;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .content-area::-webkit-scrollbar { width: 6px; }
+        .content-area::-webkit-scrollbar-track { background: transparent; }
+        .content-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        /* ── WELCOME SCREEN ── */
+        #welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 60vh;
+            gap: 24px;
+        }
+        .welcome-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .welcome-badge span { color: var(--red); font-weight: 700; }
+        #welcome h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1.1;
+            color: white;
+        }
+        #welcome h1 em { color: var(--red); font-style: normal; }
+        #welcome p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 560px;
+            line-height: 1.7;
+        }
+        .welcome-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            width: 100%;
+            max-width: 700px;
+            margin-top: 16px;
+        }
+        .welcome-card {
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .welcome-card:hover { border-color: var(--red); background: var(--bg-3); }
+        .welcome-card-icon { font-size: 1.5rem; margin-bottom: 8px; }
+        .welcome-card-title { font-size: 0.9rem; font-weight: 700; color: white; margin-bottom: 4px; }
+        .welcome-card-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+        .welcome-stats {
+            display: flex;
+            gap: 32px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+        .welcome-stat { text-align: center; }
+        .welcome-stat-num { font-size: 1.8rem; font-weight: 800; color: var(--red); }
+        .welcome-stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* ── MARKDOWN CONTENT ── */
+        #md-view { display: none; }
+        #md-view.visible { display: block; }
+
+        .topic-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .topic-breadcrumb span { color: var(--border); }
+
+        .topic-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+        .btn-mark-done {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 16px;
+            border-radius: 6px;
+            border: 1.5px solid var(--border);
+            background: none;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-mark-done:hover { border-color: var(--green); color: var(--green); }
+        .btn-mark-done.done { border-color: var(--green); background: rgba(76,175,80,0.1); color: var(--green); }
+        .btn-nav {
+            padding: 7px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: none;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+        .btn-nav:hover:not(:disabled) { border-color: var(--red); color: white; }
+        .btn-nav:disabled { opacity: 0.3; cursor: default; }
+
+        /* markdown typography */
+        .md-body { line-height: 1.75; }
+        .md-body h1 { font-size: 1.9rem; color: white; margin-bottom: 8px; font-weight: 800; }
+        .md-body h2 { font-size: 1.35rem; color: var(--yellow); margin: 32px 0 12px; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        .md-body h3 { font-size: 1.1rem; color: var(--yellow); margin: 24px 0 8px; font-weight: 700; }
+        .md-body h4 { font-size: 0.95rem; color: var(--yellow); margin: 18px 0 6px; font-weight: 700; }
+        .md-body p { color: var(--text); margin-bottom: 14px; }
+        .md-body ul, .md-body ol { margin: 10px 0 14px 20px; color: var(--text); }
+        .md-body li { margin-bottom: 4px; }
+        .md-body blockquote {
+            border-left: 3px solid var(--red);
+            padding: 10px 16px;
+            background: var(--bg-2);
+            border-radius: 0 6px 6px 0;
+            margin: 14px 0;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .md-body hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+        .md-body a { color: var(--red-light); text-decoration: none; }
+        .md-body a:hover { text-decoration: underline; }
+        .md-body strong { color: white; font-weight: 700; }
+
+        /* code */
+        .md-body code {
+            background: var(--bg-4);
+            color: #7dce82;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+            font-size: 0.82em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+        .md-body pre {
+            background: #0d0d0d;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            overflow-x: auto;
+            margin: 14px 0;
+            position: relative;
+        }
+        .md-body pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 0.85em;
+            color: #7dce82;
+            line-height: 1.6;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--bg-3);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover { background: var(--red); color: white; border-color: var(--red); }
+
+        /* tables */
+        .md-body table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.87rem; }
+        .md-body th { background: var(--bg-2); color: var(--yellow); font-weight: 700; padding: 10px 14px; text-align: left; border-bottom: 2px solid var(--red); }
+        .md-body td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+        .md-body tr:hover td { background: var(--bg-2); }
+
+        /* details/summary */
+        .md-body details {
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 14px 0;
+            overflow: hidden;
+        }
+        .md-body details summary {
+            padding: 12px 16px;
+            background: var(--bg-3);
+            cursor: pointer;
+            font-weight: 600;
+            color: white;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .md-body details summary::before { content: "▶"; font-size: 0.65rem; color: var(--red); }
+        .md-body details[open] summary::before { content: "▼"; }
+        .md-body details summary::-webkit-details-marker { display: none; }
+        .md-body details > *:not(summary) { padding: 14px 16px; }
+
+        /* ── LOADING ── */
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            padding: 40px 0;
+        }
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid var(--border);
+            border-top-color: var(--red);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── BACK TO TOP ── */
+        #back-top {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--red);
+            color: white;
+            border: none;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            z-index: 50;
+            transition: background 0.2s;
+        }
+        #back-top:hover { background: var(--red-dark); }
+        #back-top.visible { display: flex; }
+
+        /* ── INTRO/WELCOME CONTENT ── */
+        .intro-install {
+            background: #0d0d0d;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 14px 0;
+        }
+        .intro-install code {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            font-size: 0.82rem;
+            color: #7dce82;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .btn-copy-cmd {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        .btn-copy-cmd:hover { background: var(--red-dark); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; z-index: 90; height: calc(100vh - 56px); top: 56px; left: 0; }
+            .sidebar.collapsed { width: 0; }
+            .content-area { padding: 24px 20px; }
+            .topbar-search { display: none; }
+            .topbar-progress { display: none; }
+            #welcome h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── TOPBAR ── -->
+<header class="topbar">
+    <button class="topbar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">☰</button>
+    <div class="topbar-logo">
+        <span class="topbar-title">RHCSA</span>
+        <span class="topbar-sub">EX200 STUDY GUIDE</span>
+    </div>
+    <div class="topbar-search">
+        <input type="text" id="search-input" placeholder="Search topics..." oninput="filterTopics(this.value)">
+    </div>
+    <div class="topbar-progress">
+        <div class="topbar-progress-bar"><div class="topbar-progress-fill" id="prog-fill"></div></div>
+        <span id="prog-text">0 / 57</span>
+    </div>
+</header>
+
+<div class="layout">
+
+    <!-- ── SIDEBAR ── -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-inner">
+            <div class="sidebar-home" id="home-btn" onclick="showWelcome()">
+                🏠 Home &amp; Overview
+            </div>
+            <div class="sidebar-nav" id="sidebar-nav">
+
+                <!-- Chapter 1 -->
+                <div class="chapter-group open" id="ch-1">
+                    <div class="chapter-header" onclick="toggleChapter('ch-1')">
+                        <div class="chapter-progress-dot"></div>
+                        <span>01 · Essential Tools</span>
+                        <span class="chapter-chevron">▶</span>
+                    </div>
+                    <div class="topic-list">
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/01-Access-Shell-Prompt-Issue-Commands.md" data-chapter="01 · Essential Tools" data-title="01 · Access a Shell Prompt &amp; Issue Commands"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">01 · Access a Shell Prompt &amp; Issue Commands</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/02-Input-Output-Redirection.md" data-chapter="01 · Essential Tools" data-title="02 · Input-Output Redirection"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">02 · Input-Output Redirection</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/03-Grep-Regular-Expressions.md" data-chapter="01 · Essential Tools" data-title="03 · Grep &amp; Regular Expressions"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">03 · Grep &amp; Regular Expressions</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/04-Access-Remote-Systems-SSH.md" data-chapter="01 · Essential Tools" data-title="04 · Access Remote Systems via SSH"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">04 · Access Remote Systems via SSH</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/05-Login-Switch-Users-Multiuser-Targets.md" data-chapter="01 · Essential Tools" data-title="05 · Login &amp; Switch Users"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">05 · Login &amp; Switch Users</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/06-Archive-Compress-Unpack-Files.md" data-chapter="01 · Essential Tools" data-title="06 · Archive, Compress &amp; Unpack Files"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">06 · Archive, Compress &amp; Unpack Files</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/07-Create-Edit-Text-Files.md" data-chapter="01 · Essential Tools" data-title="07 · Create &amp; Edit Text Files"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">07 · Create &amp; Edit Text Files</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/08-Create-Delete-Copy-Move-Files-Directories.md" data-chapter="01 · Essential Tools" data-title="08 · Create, Delete, Copy &amp; Move Files"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">08 · Create, Delete, Copy &amp; Move Files</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/09-Create-Hard-Soft-Links.md" data-chapter="01 · Essential Tools" data-title="09 · Create Hard &amp; Soft Links"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">09 · Create Hard &amp; Soft Links</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/10-List-Set-Change-Permissions.md" data-chapter="01 · Essential Tools" data-title="10 · List, Set &amp; Change Permissions"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">10 · List, Set &amp; Change Permissions</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/01-%20Understand%20and%20use%20essential%20tools/11-Locate-Read-Use-System-Documentation.md" data-chapter="01 · Essential Tools" data-title="11 · System Documentation (man, info)"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">11 · System Documentation (man, info)</span></div>
+                    </div>
+                </div>
+
+                <!-- Chapter 2 -->
+                <div class="chapter-group" id="ch-2">
+                    <div class="chapter-header" onclick="toggleChapter('ch-2')">
+                        <div class="chapter-progress-dot"></div>
+                        <span>02 · Manage Software</span>
+                        <span class="chapter-chevron">▶</span>
+                    </div>
+                    <div class="topic-list">
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/02-%20Manage%20software/01-Configure-Access-RPM-Repositories.md" data-chapter="02 · Manage Software" data-title="01 · Configure RPM Repositories"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">01 · Configure RPM Repositories</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/02-%20Manage%20software/02-Install-Remove-RPM-Packages.md" data-chapter="02 · Manage Software" data-title="02 · Install &amp; Remove RPM Packages"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">02 · Install &amp; Remove RPM Packages</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/02-%20Manage%20software/03-Configure-Access-Flatpak-Repositories.md" data-chapter="02 · Manage Software" data-title="03 · Configure Flatpak Repositories"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">03 · Configure Flatpak Repositories</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/02-%20Manage%20software/04-Install-Remove-Flatpak-Packages.md" data-chapter="02 · Manage Software" data-title="04 · Install &amp; Remove Flatpak Packages"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">04 · Install &amp; Remove Flatpak Packages</span></div>
+                    </div>
+                </div>
+
+                <!-- Chapter 3 -->
+                <div class="chapter-group" id="ch-3">
+                    <div class="chapter-header" onclick="toggleChapter('ch-3')">
+                        <div class="chapter-progress-dot"></div>
+                        <span>03 · Shell Scripts</span>
+                        <span class="chapter-chevron">▶</span>
+                    </div>
+                    <div class="topic-list">
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/03-%20Create%20simple%20shell%20scripts/01-Conditionally-Execute-Code.md" data-chapter="03 · Shell Scripts" data-title="01 · Conditionally Execute Code (if, test)"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">01 · Conditionally Execute Code</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/03-%20Create%20simple%20shell%20scripts/02-Use-Looping-Constructs.md" data-chapter="03 · Shell Scripts" data-title="02 · Looping Constructs (for, while)"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">02 · Looping Constructs</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/03-%20Create%20simple%20shell%20scripts/03-Process-Script-Inputs.md" data-chapter="03 · Shell Scripts" data-title="03 · Process Script Inputs ($1, $2)"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">03 · Process Script Inputs</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/03-%20Create%20simple%20shell%20scripts/04-Process-Command-Output.md" data-chapter="03 · Shell Scripts" data-title="04 · Processing Command Output"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">04 · Processing Command Output</span></div>
+                    </div>
+                </div>
+
+                <!-- Chapter 4 -->
+                <div class="chapter-group" id="ch-4">
+                    <div class="chapter-header" onclick="toggleChapter('ch-4')">
+                        <div class="chapter-progress-dot"></div>
+                        <span>04 · Running Systems</span>
+                        <span class="chapter-chevron">▶</span>
+                    </div>
+                    <div class="topic-list">
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/04-%20Operate%20running%20systems/01-Boot-Reboot-Shutdown-System.md" data-chapter="04 · Running Systems" data-title="01 · Boot, Reboot &amp; Shutdown"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">01 · Boot, Reboot &amp; Shutdown</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/04-%20Operate%20running%20systems/02-Boot-Systems-Different-Targets.md" data-chapter="04 · Running Systems" data-title="02 · Boot into Different Targets"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">02 · Boot into Different Targets</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/04-%20Operate%20running%20systems/03-Interrupt-Boot-Process-Gain-Access.md" data-chapter="04 · Running Systems" data-title="03 · Interrupt Boot &amp; Gain Access"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">03 · Interrupt Boot &amp; Gain Access</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/04-%20Operate%20running%20systems/04-Identify-Kill-Processes.md" data-chapter="04 · Running Systems" data-title="04 · Identify &amp; Kill Processes"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">04 · Identify &amp; Kill Processes</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/04-%20Operate%20running%20systems/05-Adjust-Process-Scheduling.md" data-chapter="04 · Running Systems" data-title="05 · Adjust Process Scheduling"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">05 · Adjust Process Scheduling</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/04-%20Operate%20running%20systems/06-Manage-Tuning-Profiles.md" data-chapter="04 · Running Systems" data-title="06 · Manage Tuning Profiles"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">06 · Manage Tuning Profiles</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/04-%20Operate%20running%20systems/07-Locate-Interpret-Logs-Journals.md" data-chapter="04 · Running Systems" data-title="07 · Logs &amp; Journals"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">07 · Logs &amp; Journals</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/04-%20Operate%20running%20systems/08-Preserve-System-Journals.md" data-chapter="04 · Running Systems" data-title="08 · Preserve System Journals"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">08 · Preserve System Journals</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/04-%20Operate%20running%20systems/09-Start-Stop-Check-Network-Services.md" data-chapter="04 · Running Systems" data-title="09 · Network Services"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">09 · Network Services</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/04-%20Operate%20running%20systems/10-Securely-Transfer-Files.md" data-chapter="04 · Running Systems" data-title="10 · Securely Transfer Files"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">10 · Securely Transfer Files</span></div>
+                    </div>
+                </div>
+
+                <!-- Chapter 5 -->
+                <div class="chapter-group" id="ch-5">
+                    <div class="chapter-header" onclick="toggleChapter('ch-5')">
+                        <div class="chapter-progress-dot"></div>
+                        <span>05 · Local Storage</span>
+                        <span class="chapter-chevron">▶</span>
+                    </div>
+                    <div class="topic-list">
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/05-%20Configure%20local%20storage/01-GPT-Partitions.md" data-chapter="05 · Local Storage" data-title="01 · GPT Partitions"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">01 · GPT Partitions</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/05-%20Configure%20local%20storage/02-Physical-Volumes.md" data-chapter="05 · Local Storage" data-title="02 · Physical Volumes"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">02 · Physical Volumes</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/05-%20Configure%20local%20storage/03-Volume-Groups.md" data-chapter="05 · Local Storage" data-title="03 · Volume Groups"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">03 · Volume Groups</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/05-%20Configure%20local%20storage/04-Logical-Volumes.md" data-chapter="05 · Local Storage" data-title="04 · Logical Volumes"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">04 · Logical Volumes</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/05-%20Configure%20local%20storage/05-Mount-UUID-Label.md" data-chapter="05 · Local Storage" data-title="05 · Mount by UUID/Label"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">05 · Mount by UUID/Label</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/05-%20Configure%20local%20storage/06-Add-Partitions-LV-Swap.md" data-chapter="05 · Local Storage" data-title="06 · Add Partitions, LV &amp; Swap"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">06 · Add Partitions, LV &amp; Swap</span></div>
+                    </div>
+                </div>
+
+                <!-- Chapter 6 -->
+                <div class="chapter-group" id="ch-6">
+                    <div class="chapter-header" onclick="toggleChapter('ch-6')">
+                        <div class="chapter-progress-dot"></div>
+                        <span>06 · File Systems</span>
+                        <span class="chapter-chevron">▶</span>
+                    </div>
+                    <div class="topic-list">
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/06-%20Create%20and%20configure%20file%20systems/01-VFAT-ext4-XFS-Filesystems.md" data-chapter="06 · File Systems" data-title="01 · vfat, ext4 &amp; XFS File Systems"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">01 · vfat, ext4 &amp; XFS</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/06-%20Create%20and%20configure%20file%20systems/02-NFS-Mount.md" data-chapter="06 · File Systems" data-title="02 · NFS Mount"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">02 · NFS Mount</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/06-%20Create%20and%20configure%20file%20systems/03-Configure-Autofs.md" data-chapter="06 · File Systems" data-title="03 · Configure Autofs"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">03 · Configure Autofs</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/06-%20Create%20and%20configure%20file%20systems/04-Extend-Logical-Volumes.md" data-chapter="06 · File Systems" data-title="04 · Extend Logical Volumes"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">04 · Extend Logical Volumes</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/06-%20Create%20and%20configure%20file%20systems/05-File-Permission-Problems.md" data-chapter="06 · File Systems" data-title="05 · File Permission Problems"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">05 · File Permission Problems</span></div>
+                    </div>
+                </div>
+
+                <!-- Chapter 7 -->
+                <div class="chapter-group" id="ch-7">
+                    <div class="chapter-header" onclick="toggleChapter('ch-7')">
+                        <div class="chapter-progress-dot"></div>
+                        <span>07 · Deploy &amp; Maintain</span>
+                        <span class="chapter-chevron">▶</span>
+                    </div>
+                    <div class="topic-list">
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/07-%20Deploy%2C%20configure%2C%20and%20maintain%20systems/01-Schedule-Tasks.md" data-chapter="07 · Deploy &amp; Maintain" data-title="01 · Schedule Tasks (at, cron)"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">01 · Schedule Tasks</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/07-%20Deploy%2C%20configure%2C%20and%20maintain%20systems/02-Start-Stop-Services.md" data-chapter="07 · Deploy &amp; Maintain" data-title="02 · Start &amp; Stop Services"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">02 · Start &amp; Stop Services</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/07-%20Deploy%2C%20configure%2C%20and%20maintain%20systems/03-Boot-Target.md" data-chapter="07 · Deploy &amp; Maintain" data-title="03 · Boot Target"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">03 · Boot Target</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/07-%20Deploy%2C%20configure%2C%20and%20maintain%20systems/04-Time-Service-Clients.md" data-chapter="07 · Deploy &amp; Maintain" data-title="04 · Time Service Clients"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">04 · Time Service Clients</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/07-%20Deploy%2C%20configure%2C%20and%20maintain%20systems/05-Software-Packages.md" data-chapter="07 · Deploy &amp; Maintain" data-title="05 · Software Packages"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">05 · Software Packages</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/07-%20Deploy%2C%20configure%2C%20and%20maintain%20systems/06-System-Bootloader.md" data-chapter="07 · Deploy &amp; Maintain" data-title="06 · System Bootloader"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">06 · System Bootloader</span></div>
+                    </div>
+                </div>
+
+                <!-- Chapter 8 -->
+                <div class="chapter-group" id="ch-8">
+                    <div class="chapter-header" onclick="toggleChapter('ch-8')">
+                        <div class="chapter-progress-dot"></div>
+                        <span>08 · Networking</span>
+                        <span class="chapter-chevron">▶</span>
+                    </div>
+                    <div class="topic-list">
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/08-%20Manage%20basic%20networking/01-Configure-IPv4-IPv6-Addresses.md" data-chapter="08 · Networking" data-title="01 · Configure IPv4 &amp; IPv6"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">01 · Configure IPv4 &amp; IPv6</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/08-%20Manage%20basic%20networking/02-Configure-Hostname-Resolution.md" data-chapter="08 · Networking" data-title="02 · Hostname Resolution"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">02 · Hostname Resolution</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/08-%20Manage%20basic%20networking/03-Configure-Network-Services-Boot.md" data-chapter="08 · Networking" data-title="03 · Network Services at Boot"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">03 · Network Services at Boot</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/08-%20Manage%20basic%20networking/04-Restrict-Network-Access-Firewalld.md" data-chapter="08 · Networking" data-title="04 · Restrict Access via Firewalld"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">04 · Firewalld</span></div>
+                    </div>
+                </div>
+
+                <!-- Chapter 9 -->
+                <div class="chapter-group" id="ch-9">
+                    <div class="chapter-header" onclick="toggleChapter('ch-9')">
+                        <div class="chapter-progress-dot"></div>
+                        <span>09 · Users &amp; Groups</span>
+                        <span class="chapter-chevron">▶</span>
+                    </div>
+                    <div class="topic-list">
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/09-%20Manage%20users%20and%20groups/01-Create-Delete-Modify-Users.md" data-chapter="09 · Users &amp; Groups" data-title="01 · Create, Delete &amp; Modify Users"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">01 · Create, Delete &amp; Modify Users</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/09-%20Manage%20users%20and%20groups/02-Password-Aging.md" data-chapter="09 · Users &amp; Groups" data-title="02 · Password Aging"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">02 · Password Aging</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/09-%20Manage%20users%20and%20groups/03-Groups-Memberships.md" data-chapter="09 · Users &amp; Groups" data-title="03 · Groups &amp; Memberships"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">03 · Groups &amp; Memberships</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/09-%20Manage%20users%20and%20groups/04-Configure-Privileged-Access.md" data-chapter="09 · Users &amp; Groups" data-title="04 · Configure Privileged Access (sudo)"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">04 · Privileged Access (sudo)</span></div>
+                    </div>
+                </div>
+
+                <!-- Chapter 10 -->
+                <div class="chapter-group" id="ch-10">
+                    <div class="chapter-header" onclick="toggleChapter('ch-10')">
+                        <div class="chapter-progress-dot"></div>
+                        <span>10 · Security</span>
+                        <span class="chapter-chevron">▶</span>
+                    </div>
+                    <div class="topic-list">
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/10-%20Manage%20security/01-Configure-Firewall-Settings.md" data-chapter="10 · Security" data-title="01 · Firewall Settings"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">01 · Firewall Settings</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/10-%20Manage%20security/02-Default-File-Permissions.md" data-chapter="10 · Security" data-title="02 · Default File Permissions"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">02 · Default File Permissions</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/10-%20Manage%20security/03-SSH-Key-Authentication.md" data-chapter="10 · Security" data-title="03 · SSH Key Authentication"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">03 · SSH Key Authentication</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/10-%20Manage%20security/04-SELinux-Modes.md" data-chapter="10 · Security" data-title="04 · SELinux Modes"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">04 · SELinux Modes</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/10-%20Manage%20security/05-SELinux-Context.md" data-chapter="10 · Security" data-title="05 · SELinux Context"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">05 · SELinux Context</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/10-%20Manage%20security/06-Restore-File-Contexts.md" data-chapter="10 · Security" data-title="06 · Restore File Contexts"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">06 · Restore File Contexts</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/10-%20Manage%20security/07-SELinux-Port-Labels.md" data-chapter="10 · Security" data-title="07 · SELinux Port Labels"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">07 · SELinux Port Labels</span></div>
+                        <div class="topic-item" onclick="loadTopic(this)" data-url="https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/refs/heads/main/contents/10-%20Manage%20security/08-SELinux-Booleans.md" data-chapter="10 · Security" data-title="08 · SELinux Booleans"><div class="topic-check" onclick="toggleDone(event,this)"></div><span class="topic-label">08 · SELinux Booleans</span></div>
+                    </div>
+                </div>
+
+            </div><!-- /sidebar-nav -->
+        </div>
+    </nav>
+
+    <!-- ── MAIN ── -->
+    <main class="main">
+        <div class="content-area" id="content-area">
+
+            <!-- WELCOME -->
+            <div id="welcome">
+                <div class="welcome-badge"><span>RHCSA</span> EX200 · RHEL 9/10</div>
+                <h1>Your <em>RHCSA</em><br>Study Dashboard</h1>
+                <p>10 chapters · 57 topics · practice questions with solutions. Work through each topic on your RHEL virtual machine and mark them complete as you go.</p>
+                <div class="welcome-stats">
+                    <div class="welcome-stat"><div class="welcome-stat-num">10</div><div class="welcome-stat-label">Chapters</div></div>
+                    <div class="welcome-stat"><div class="welcome-stat-num">57</div><div class="welcome-stat-label">Topics</div></div>
+                    <div class="welcome-stat"><div class="welcome-stat-num" id="done-count">0</div><div class="welcome-stat-label">Completed</div></div>
+                </div>
+                <div class="welcome-grid">
+                    <div class="welcome-card" onclick="openChapterFirst('ch-1')">
+                        <div class="welcome-card-icon">🐚</div>
+                        <div class="welcome-card-title">Start from the beginning</div>
+                        <div class="welcome-card-desc">Chapter 01: Essential Tools — shell, commands, permissions.</div>
+                    </div>
+                    <div class="welcome-card" onclick="openChapterFirst('ch-10')">
+                        <div class="welcome-card-icon">🔒</div>
+                        <div class="welcome-card-title">Jump to Security</div>
+                        <div class="welcome-card-desc">Chapter 10: SELinux, firewalld, SSH keys.</div>
+                    </div>
+                    <div class="welcome-card" onclick="openChapterFirst('ch-5')">
+                        <div class="welcome-card-icon">💾</div>
+                        <div class="welcome-card-title">Storage &amp; LVM</div>
+                        <div class="welcome-card-desc">Chapters 05–06: Partitions, LVM, file systems.</div>
+                    </div>
+                    <div class="welcome-card" onclick="document.getElementById('search-input').focus()">
+                        <div class="welcome-card-icon">🔍</div>
+                        <div class="welcome-card-title">Search a topic</div>
+                        <div class="welcome-card-desc">Use the search bar above to filter topics by keyword.</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:32px; background:var(--bg-2); border:1px solid var(--border); border-radius:10px; padding:24px; max-width:600px; width:100%; text-align:left;">
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--yellow); margin-bottom:10px;">FREE Exam Simulator</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Requirements: CentOS Stream 10, 2 NICs (Bridge mode), 20GB for / + 4×5GB disks</div>
+                    <div class="intro-install">
+                        <code id="install-cmd">curl -sL https://raw.githubusercontent.com/RHCSA/RHCSA.github.io/main/Install_RHCSA_EX200_Exam_Simulator.sh | sudo bash</code>
+                        <button class="btn-copy-cmd" onclick="copyInstallCmd()">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MARKDOWN VIEW -->
+            <div id="md-view">
+                <div class="topic-breadcrumb" id="breadcrumb"></div>
+                <div class="topic-actions">
+                    <button class="btn-mark-done" id="btn-done" onclick="markCurrentDone()">✓ Mark as Complete</button>
+                    <button class="btn-nav" id="btn-prev" onclick="navTopic(-1)">← Prev</button>
+                    <button class="btn-nav" id="btn-next" onclick="navTopic(1)">Next →</button>
+                </div>
+                <div class="md-body" id="md-body"></div>
+                <div style="margin-top:40px; padding-top:24px; border-top:1px solid var(--border); display:flex; gap:10px;">
+                    <button class="btn-nav" id="btn-prev-b" onclick="navTopic(-1)">← Prev Topic</button>
+                    <button class="btn-nav" id="btn-next-b" onclick="navTopic(1)">Next Topic →</button>
+                    <button class="btn-mark-done" id="btn-done-b" onclick="markCurrentDone()" style="margin-left:auto;">✓ Mark as Complete</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+<button id="back-top" onclick="document.getElementById('content-area').scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+// ── STATE ──
+const STORAGE_KEY = 'rhcsa_done_v1';
+let done = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+let currentUrl = null;
+const allTopics = Array.from(document.querySelectorAll('.topic-item'));
+const TOTAL = allTopics.length;
+
+// ── INIT ──
+function init() {
+    // Restore done state
+    allTopics.forEach(item => {
+        const url = item.dataset.url;
+        const chk = item.querySelector('.topic-check');
+        if (done[url]) {
+            chk.classList.add('done');
+            chk.textContent = '✓';
+        }
+    });
+    updateProgress();
+    updateChapterDots();
+
+    // marked config
+    marked.setOptions({ breaks: true, gfm: true });
+}
+
+// ── SIDEBAR TOGGLE ──
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+// ── CHAPTER TOGGLE ──
+function toggleChapter(id) {
+    document.getElementById(id).classList.toggle('open');
+}
+
+function openChapterFirst(chId) {
+    const group = document.getElementById(chId);
+    group.classList.add('open');
+    const first = group.querySelector('.topic-item');
+    if (first) loadTopic(first);
+    // Scroll sidebar to chapter
+    group.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── LOAD TOPIC ──
+function loadTopic(item) {
+    // Deactivate all
+    allTopics.forEach(t => t.classList.remove('active'));
+    item.classList.add('active');
+
+    const url = item.dataset.url;
+    const chapter = item.dataset.chapter;
+    const title = item.dataset.title;
+    currentUrl = url;
+
+    // Show md-view, hide welcome
+    document.getElementById('welcome').style.display = 'none';
+    document.getElementById('md-view').classList.add('visible');
+    document.getElementById('home-btn').classList.remove('active');
+
+    // Breadcrumb
+    document.getElementById('breadcrumb').innerHTML =
+        `<span style="cursor:pointer;color:var(--text-muted);" onclick="showWelcome()">Home</span>
+         <span>›</span>
+         <span>${chapter}</span>
+         <span>›</span>
+         <span style="color:var(--text);">${title}</span>`;
+
+    // Done state
+    syncDoneButton();
+
+    // Nav buttons
+    const idx = allTopics.indexOf(item);
+    document.getElementById('btn-prev').disabled = idx === 0;
+    document.getElementById('btn-next').disabled = idx === allTopics.length - 1;
+    document.getElementById('btn-prev-b').disabled = idx === 0;
+    document.getElementById('btn-next-b').disabled = idx === allTopics.length - 1;
+
+    // Scroll to top
+    document.getElementById('content-area').scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Load markdown
+    const body = document.getElementById('md-body');
+    body.innerHTML = '<div class="loading"><div class="spinner"></div> Loading content…</div>';
+
+    fetch(url)
+        .then(r => r.text())
+        .then(md => {
+            body.innerHTML = marked.parse(md);
+            // Add copy buttons to all pre blocks
+            body.querySelectorAll('pre').forEach(pre => {
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.textContent = 'Copy';
+                btn.onclick = () => {
+                    navigator.clipboard.writeText(pre.querySelector('code')?.textContent || pre.textContent);
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = 'Copy', 1800);
+                };
+                pre.style.position = 'relative';
+                pre.appendChild(btn);
+            });
+        })
+        .catch(() => {
+            body.innerHTML = '<p style="color:var(--text-muted);">Failed to load content. Check your internet connection.</p>';
+        });
+}
+
+// ── NAVIGATION ──
+function navTopic(dir) {
+    const current = allTopics.find(t => t.classList.contains('active'));
+    const idx = current ? allTopics.indexOf(current) : -1;
+    const next = allTopics[idx + dir];
+    if (next) {
+        // Make sure its chapter is open
+        const group = next.closest('.chapter-group');
+        if (group) group.classList.add('open');
+        loadTopic(next);
+        next.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+// ── DONE / PROGRESS ──
+function toggleDone(event, chk) {
+    event.stopPropagation();
+    const item = chk.closest('.topic-item');
+    const url = item.dataset.url;
+    if (chk.classList.contains('done')) {
+        chk.classList.remove('done');
+        chk.textContent = '';
+        delete done[url];
+    } else {
+        chk.classList.add('done');
+        chk.textContent = '✓';
+        done[url] = true;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+    updateProgress();
+    updateChapterDots();
+    if (url === currentUrl) syncDoneButton();
+}
+
+function markCurrentDone() {
+    if (!currentUrl) return;
+    const item = allTopics.find(t => t.dataset.url === currentUrl);
+    if (!item) return;
+    const chk = item.querySelector('.topic-check');
+    const isDone = !chk.classList.contains('done');
+    if (isDone) {
+        chk.classList.add('done');
+        chk.textContent = '✓';
+        done[currentUrl] = true;
+    } else {
+        chk.classList.remove('done');
+        chk.textContent = '';
+        delete done[currentUrl];
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(done));
+    updateProgress();
+    updateChapterDots();
+    syncDoneButton();
+}
+
+function syncDoneButton() {
+    const isDone = done[currentUrl];
+    ['btn-done', 'btn-done-b'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.classList.toggle('done', !!isDone);
+        btn.textContent = isDone ? '✓ Completed' : '✓ Mark as Complete';
+    });
+}
+
+function updateProgress() {
+    const count = Object.keys(done).length;
+    const pct = Math.round((count / TOTAL) * 100);
+    document.getElementById('prog-fill').style.width = pct + '%';
+    document.getElementById('prog-text').textContent = `${count} / ${TOTAL}`;
+    document.getElementById('done-count').textContent = count;
+}
+
+function updateChapterDots() {
+    document.querySelectorAll('.chapter-group').forEach(group => {
+        const topics = group.querySelectorAll('.topic-item');
+        const anyActive = Array.from(topics).some(t => t.classList.contains('active'));
+        const header = group.querySelector('.chapter-header');
+        header.classList.toggle('has-active', anyActive);
+    });
+}
+
+// ── SEARCH ──
+function filterTopics(query) {
+    const q = query.toLowerCase().trim();
+    allTopics.forEach(item => {
+        const label = item.querySelector('.topic-label').textContent.toLowerCase();
+        const chapter = item.dataset.chapter.toLowerCase();
+        const match = !q || label.includes(q) || chapter.includes(q);
+        item.classList.toggle('hidden', !match);
+        // Open chapter if it has a match
+        if (match && q) item.closest('.chapter-group').classList.add('open');
+    });
+}
+
+// ── WELCOME ──
+function showWelcome() {
+    document.getElementById('welcome').style.display = '';
+    document.getElementById('md-view').classList.remove('visible');
+    allTopics.forEach(t => t.classList.remove('active'));
+    document.getElementById('home-btn').classList.add('active');
+    currentUrl = null;
+    document.getElementById('content-area').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── COPY INSTALL CMD ──
+function copyInstallCmd() {
+    const cmd = document.getElementById('install-cmd').textContent;
+    navigator.clipboard.writeText(cmd).then(() => {
+        const btn = event.target;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+}
+
+// ── BACK TO TOP ──
+document.getElementById('content-area').addEventListener('scroll', function() {
+    const btn = document.getElementById('back-top');
+    btn.classList.toggle('visible', this.scrollTop > 300);
+});
+
+// ── KEYBOARD NAV ──
+document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.altKey && e.key === 'ArrowRight') navTopic(1);
+    if (e.altKey && e.key === 'ArrowLeft') navTopic(-1);
+});
+
+init();
+</script>
+</body>
+</html>
