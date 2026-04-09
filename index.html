@@ -19,6 +19,28 @@
             --yellow: #ffc107;
             --green: #4caf50;
             --sidebar-w: 300px;
+            --code-bg: #0d0d0d;
+            --code-text: #7dce82;
+            --code-inline-bg: #1e1e1e;
+            --code-inline-text: #7dce82;
+            --text-strong: #ffffff;
+        }
+
+        [data-theme="light"] {
+            --bg: #f4f4f5;
+            --bg-2: #ffffff;
+            --bg-3: #f0f0f1;
+            --bg-4: #e4e4e7;
+            --border: #d4d4d8;
+            --text: #18181b;
+            --text-muted: #71717a;
+            --text-strong: #18181b;
+            --yellow: #92400e;
+            --green: #15803d;
+            --code-bg: #1e1e1e;
+            --code-text: #7dce82;
+            --code-inline-bg: #1e1e1e;
+            --code-inline-text: #7dce82;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -282,7 +304,7 @@
             font-size: 2.8rem;
             font-weight: 800;
             line-height: 1.1;
-            color: white;
+            color: var(--text-strong);
         }
         #welcome h1 em { color: var(--red); font-style: normal; }
         #welcome p {
@@ -310,7 +332,7 @@
         }
         .welcome-card:hover { border-color: var(--red); background: var(--bg-3); }
         .welcome-card-icon { font-size: 1.5rem; margin-bottom: 8px; }
-        .welcome-card-title { font-size: 0.9rem; font-weight: 700; color: white; margin-bottom: 4px; }
+        .welcome-card-title { font-size: 0.9rem; font-weight: 700; color: var(--text-strong); margin-bottom: 4px; }
         .welcome-card-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
         .welcome-stats {
             display: flex;
@@ -375,7 +397,7 @@
 
         /* markdown typography */
         .md-body { line-height: 1.75; }
-        .md-body h1 { font-size: 1.9rem; color: white; margin-bottom: 8px; font-weight: 800; }
+        .md-body h1 { font-size: 1.9rem; color: var(--text-strong); margin-bottom: 8px; font-weight: 800; }
         .md-body h2 { font-size: 1.35rem; color: var(--yellow); margin: 32px 0 12px; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
         .md-body h3 { font-size: 1.1rem; color: var(--yellow); margin: 24px 0 8px; font-weight: 700; }
         .md-body h4 { font-size: 0.95rem; color: var(--yellow); margin: 18px 0 6px; font-weight: 700; }
@@ -394,20 +416,20 @@
         .md-body hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
         .md-body a { color: var(--red-light); text-decoration: none; }
         .md-body a:hover { text-decoration: underline; }
-        .md-body strong { color: white; font-weight: 700; }
+        .md-body strong { color: var(--text-strong); font-weight: 700; }
 
         /* code */
         .md-body code {
-            background: var(--bg-4);
-            color: #7dce82;
+            background: var(--code-inline-bg);
+            color: var(--code-inline-text);
             font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
             font-size: 0.82em;
-            padding: 2px 6px;
+            padding: 2px 7px;
             border-radius: 4px;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(125, 206, 130, 0.25);
         }
         .md-body pre {
-            background: #0d0d0d;
+            background: var(--code-bg);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 16px 20px;
@@ -420,7 +442,7 @@
             border: none;
             padding: 0;
             font-size: 0.85em;
-            color: #7dce82;
+            color: var(--code-text);
             line-height: 1.6;
         }
         .copy-btn {
@@ -457,7 +479,7 @@
             background: var(--bg-3);
             cursor: pointer;
             font-weight: 600;
-            color: white;
+            color: var(--text-strong);
             list-style: none;
             display: flex;
             align-items: center;
@@ -509,7 +531,7 @@
 
         /* ── INTRO/WELCOME CONTENT ── */
         .intro-install {
-            background: #0d0d0d;
+            background: var(--code-bg);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 14px 16px;
@@ -563,6 +585,7 @@
     <div class="topbar-search">
         <input type="text" id="search-input" placeholder="Search topics..." oninput="filterTopics(this.value)">
     </div>
+    <button id="theme-toggle" class="topbar-toggle" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
     <div class="topbar-progress">
         <div class="topbar-progress-bar"><div class="topbar-progress-fill" id="prog-fill"></div></div>
         <span id="prog-text">0 / 57</span>
@@ -827,6 +850,27 @@
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
+// ── THEME ──
+(function() {
+    const saved = localStorage.getItem('rhcsa_theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+})();
+
+function toggleTheme() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const next = isLight ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next === 'dark' ? '' : 'light');
+    localStorage.setItem('rhcsa_theme', next);
+    document.getElementById('theme-toggle').textContent = next === 'dark' ? '🌙' : '☀️';
+}
+
+function applyThemeIcon() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    document.getElementById('theme-toggle').textContent = isLight ? '☀️' : '🌙';
+}
+
 // ── STATE ──
 const STORAGE_KEY = 'rhcsa_done_v1';
 let done = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -836,6 +880,7 @@ const TOTAL = allTopics.length;
 
 // ── INIT ──
 function init() {
+    applyThemeIcon();
     // Restore done state
     allTopics.forEach(item => {
         const url = item.dataset.url;

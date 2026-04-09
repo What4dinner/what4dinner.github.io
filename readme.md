@@ -1,7 +1,7 @@
 # Red Hat Certified System Administrator (RHCSA) - EX200
 
 > **Original project:** [https://github.com/RHCSA/RHCSA.github.io](https://github.com/RHCSA/RHCSA.github.io)  
-> **Live site:** [https://RHCSA.github.io](https://RHCSA.github.io)
+> **Live site:** [https://what4dinner.github.io/](https://what4dinner.github.io/)
 
 ---
 
