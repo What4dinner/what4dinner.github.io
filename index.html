@@ -136,6 +136,91 @@
             transition: width 0.3s;
         }
 
+        /* ── TOC DROPDOWN ── */
+        #toc-btn {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 5px 12px;
+            border-radius: 6px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
+        #toc-btn:hover { background: rgba(255,255,255,0.22); }
+        #toc-btn.open { background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.5); }
+        #toc-btn.visible { display: flex; }
+        .toc-btn-chevron { font-size: 0.6rem; opacity: 0.7; transition: transform 0.2s; }
+        #toc-btn.open .toc-btn-chevron { transform: rotate(180deg); }
+
+        #toc-panel {
+            position: fixed;
+            top: 56px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(720px, calc(100vw - 40px));
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-top: 2px solid var(--red);
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+            z-index: 98;
+            display: none;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        #toc-panel.open { display: block; }
+        #toc-panel::-webkit-scrollbar { width: 4px; }
+        #toc-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        #toc-panel-inner {
+            padding: 10px 14px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .toc-section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 6px 10px 4px;
+        }
+        .toc-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.83rem;
+            color: var(--text-muted);
+            transition: background 0.15s, color 0.15s;
+            border: none;
+            background: none;
+            text-align: left;
+            width: 100%;
+            line-height: 1.4;
+        }
+        .toc-item:hover { background: var(--bg-3); color: var(--text); }
+        .toc-item.active { color: var(--text); font-weight: 600; }
+        .toc-item.h3 { padding-left: 26px; font-size: 0.79rem; }
+        .toc-item-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: var(--border);
+            flex-shrink: 0;
+            margin-top: 6px;
+            transition: background 0.15s;
+        }
+        .toc-item.active .toc-item-dot { background: var(--red); }
+
         /* ── LAYOUT ── */
         .layout {
             display: flex;
@@ -569,6 +654,7 @@
             .content-area { padding: 24px 20px; }
             .topbar-search { display: none; }
             .topbar-progress { display: none; }
+            #toc-panel { width: calc(100vw - 20px); }
             #welcome h1 { font-size: 1.8rem; }
         }
     </style>
@@ -582,6 +668,9 @@
         <span class="topbar-title">RHCSA</span>
         <span class="topbar-sub">EX200 STUDY GUIDE</span>
     </div>
+    <button id="toc-btn" onclick="toggleToc()" title="Table of Contents">
+        ≡ Contents <span class="toc-btn-chevron">▾</span>
+    </button>
     <div class="topbar-search">
         <input type="text" id="search-input" placeholder="Search topics..." oninput="filterTopics(this.value)">
     </div>
@@ -591,6 +680,11 @@
         <span id="prog-text">0 / 57</span>
     </div>
 </header>
+
+<!-- ── TOC PANEL ── -->
+<div id="toc-panel" role="dialog" aria-label="Table of Contents">
+    <div id="toc-panel-inner"></div>
+</div>
 
 <div class="layout">
 
@@ -961,6 +1055,25 @@ function loadTopic(item) {
         .then(r => r.text())
         .then(md => {
             body.innerHTML = marked.parse(md);
+
+            // Add IDs to headings (marked.js doesn't always add them)
+            const slugify = text => text.toLowerCase().trim()
+                .replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
+            body.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(h => {
+                if (!h.id) h.id = slugify(h.textContent);
+            });
+
+            // Fix internal anchor links to scroll within content-area
+            const ca = document.getElementById('content-area');
+            body.querySelectorAll('a[href^="#"]').forEach(a => {
+                a.addEventListener('click', e => {
+                    e.preventDefault();
+                    const hash = a.getAttribute('href').slice(1);
+                    const target = body.querySelector('#' + CSS.escape(hash));
+                    if (target) scrollToHeading(target);
+                });
+            });
+
             // Add copy buttons to all pre blocks
             body.querySelectorAll('pre').forEach(pre => {
                 const btn = document.createElement('button');
@@ -974,6 +1087,9 @@ function loadTopic(item) {
                 pre.style.position = 'relative';
                 pre.appendChild(btn);
             });
+
+            // Build topbar TOC
+            buildToc();
         })
         .catch(() => {
             body.innerHTML = '<p style="color:var(--text-muted);">Failed to load content. Check your internet connection.</p>';
@@ -1082,7 +1198,88 @@ function showWelcome() {
     document.getElementById('home-btn').classList.add('active');
     currentUrl = null;
     document.getElementById('content-area').scrollTo({ top: 0, behavior: 'smooth' });
+    closeToc();
+    document.getElementById('toc-btn').classList.remove('visible');
+    document.getElementById('toc-panel-inner').innerHTML = '';
 }
+
+// ── TOC ──
+function scrollToHeading(target) {
+    const ca = document.getElementById('content-area');
+    const offset = target.getBoundingClientRect().top - ca.getBoundingClientRect().top + ca.scrollTop - 20;
+    ca.scrollTo({ top: offset, behavior: 'smooth' });
+}
+
+function buildToc() {
+    const body = document.getElementById('md-body');
+    const panel = document.getElementById('toc-panel-inner');
+    const btn = document.getElementById('toc-btn');
+
+    const headings = Array.from(body.querySelectorAll('h2, h3'));
+
+    if (headings.length === 0) {
+        btn.classList.remove('visible');
+        panel.innerHTML = '';
+        return;
+    }
+
+    panel.innerHTML = '<div class="toc-section-label">On this page</div>';
+    headings.forEach(h => {
+        const item = document.createElement('button');
+        item.className = `toc-item ${h.tagName.toLowerCase()}`;
+        item.dataset.id = h.id;
+        item.innerHTML = `<div class="toc-item-dot"></div><span>${h.textContent}</span>`;
+        item.addEventListener('click', () => {
+            scrollToHeading(h);
+            closeToc();
+        });
+        panel.appendChild(item);
+    });
+
+    btn.classList.add('visible');
+    updateActiveToc();
+}
+
+function updateActiveToc() {
+    const body = document.getElementById('md-body');
+    if (!body) return;
+    const ca = document.getElementById('content-area');
+    const caTop = ca.getBoundingClientRect().top;
+    const headings = Array.from(body.querySelectorAll('h2, h3'));
+
+    let active = null;
+    for (const h of headings) {
+        if (h.getBoundingClientRect().top - caTop <= 50) active = h;
+        else break;
+    }
+
+    document.querySelectorAll('.toc-item').forEach(item => {
+        item.classList.toggle('active', !!active && item.dataset.id === active.id);
+    });
+}
+
+function toggleToc() {
+    const panel = document.getElementById('toc-panel');
+    const btn = document.getElementById('toc-btn');
+    const willOpen = !panel.classList.contains('open');
+    panel.classList.toggle('open', willOpen);
+    btn.classList.toggle('open', willOpen);
+    if (willOpen) updateActiveToc();
+}
+
+function closeToc() {
+    document.getElementById('toc-panel').classList.remove('open');
+    document.getElementById('toc-btn').classList.remove('open');
+}
+
+// Close TOC when clicking outside
+document.addEventListener('click', e => {
+    const panel = document.getElementById('toc-panel');
+    const btn = document.getElementById('toc-btn');
+    if (panel.classList.contains('open') && !panel.contains(e.target) && !btn.contains(e.target)) {
+        closeToc();
+    }
+});
 
 // ── COPY INSTALL CMD ──
 function copyInstallCmd() {
@@ -1098,6 +1295,7 @@ function copyInstallCmd() {
 document.getElementById('content-area').addEventListener('scroll', function() {
     const btn = document.getElementById('back-top');
     btn.classList.toggle('visible', this.scrollTop > 300);
+    updateActiveToc();
 });
 
 // ── KEYBOARD NAV ──
